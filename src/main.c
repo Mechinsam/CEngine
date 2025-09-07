@@ -2,6 +2,8 @@
 #include <stdlib.h> // rng
 #include <time.h> // seed for rng
 
+#include "../include/input.h"
+
 // import sleep function depending on OS
 #ifdef _WIN32
 	#include <windows.h>
@@ -62,18 +64,41 @@ void clear_framebuffer(int framebuffer[WIDTH][HEIGHT])
 }
 
 
-void update(int framebuffer[WIDTH][HEIGHT])
+void update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
 {
-	int rand_x = rand() % ((WIDTH-1) - 0 + 1) + 0;
-	int rand_y = rand() % ((HEIGHT-1) - 0 + 1) + 0;
-	framebuffer[rand_x][rand_y] = 1;
+	if (kbhit())
+	{
+		char c = getchar();
 
+		switch (c)
+		{
+			case 'w':
+				*pos_y -= 1;
+				break;
+			case 'a':
+				*pos_x -= 1;
+				break;
+			case 's':
+				*pos_y += 1;
+				break;
+			case 'd':
+				*pos_x += 1;
+				break;
+			default:
+				break;
+		}
+	}
+	framebuffer[*pos_x][*pos_y] = 1;
 }
 
 int main()
 {
+	init_keyboard();
+
 	srand(time(NULL));
 	int framebuffer[WIDTH][HEIGHT] = {0};
+
+	int pos_x = 0, pos_y = 0;
 
 	while (true)
 	{
@@ -81,7 +106,7 @@ int main()
 		clear_framebuffer(framebuffer);
 
 		// update
-		update(framebuffer);
+		update(framebuffer, &pos_x, &pos_y);
 	
 		render(framebuffer);
 		SLEEP(1.0/FRAMERATE);
