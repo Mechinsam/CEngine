@@ -2,6 +2,7 @@
 #include <stdlib.h> // rng
 #include <time.h> // seed for rng
 
+#include "../include/renderer.h"
 #include "../include/input.h"
 
 // import sleep function depending on OS
@@ -16,55 +17,10 @@
 
 #define WIDTH 80
 #define HEIGHT 30
-#define FRAMERATE 60.0
+#define FRAMERATE 24.0
 
 
-void render(int framebuffer[WIDTH][HEIGHT])
-{
-	// border
-	for (int i=-2; i < 80; i++)
-	{
-		printf("-");
-	}
-	printf("\n");
-	
-	for (int y=0; y < HEIGHT; y++)
-	{
-		printf("|");
-		for (int x=0; x < WIDTH; x++)
-		{
-			//printf("%d", framebuffer[x][y]);
-			if (framebuffer[x][y] == 1) {
-				printf("█");
-			} else {
-				printf(" ");
-			}
-		}
-		printf("|");
-		printf("\n");
-	}
-
-	// border
-	for (int i=-2; i < 80; i++)
-	{
-		printf("-");
-	}
-	printf("\n");
-}
-
-void clear_framebuffer(int framebuffer[WIDTH][HEIGHT])
-{
-	for (int y=0; y < HEIGHT; y++)
-	{
-		for (int x=0; x < WIDTH; x++)
-		{
-			framebuffer[x][y] = 0;
-		}
-	}
-}
-
-
-void update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
+void old_update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
 {
 	if (kbhit())
 	{
@@ -91,24 +47,43 @@ void update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
 	framebuffer[*pos_x][*pos_y] = 1;
 }
 
+void update(Viewport* viewport, int *pos_x, int *pos_y, int *speed_x, int *speed_y)
+{
+	*pos_x += *speed_x; *pos_y += *speed_y;
+
+	if (*pos_x < 0 || *pos_x > WIDTH - 1) *speed_x = -*speed_x;
+	if (*pos_y < 0 || *pos_y > HEIGHT -1) *speed_y = -*speed_y;
+
+	if (*pos_x < 0) *pos_x = 0;
+	if (*pos_x > WIDTH-1) *pos_x = WIDTH-1;
+	if (*pos_y < 0) *pos_y = 0;
+	if (*pos_y > HEIGHT-1) *pos_y = HEIGHT-1;
+
+	
+	viewport->framebuffer[*pos_y * viewport->width + *pos_x] = 1;
+}
+
 int main()
 {
-	init_keyboard();
-
+	//init_keyboard();
+	
 	srand(time(NULL));
-	int framebuffer[WIDTH][HEIGHT] = {0};
+	Viewport viewport = create_viewport(WIDTH, HEIGHT, "Bouncing demo - CEngine");
 
 	int pos_x = 0, pos_y = 0;
+	int speed_x = 1, speed_y = 1;
 
-	while (true)
+	int running = 1;
+	printf("\033c");
+	while (running)
 	{
 		printf("\033[H");
-		clear_framebuffer(framebuffer);
+		clear_framebuffer(&viewport);
 
 		// update
-		update(framebuffer, &pos_x, &pos_y);
+		update(&viewport, &pos_x, &pos_y, &speed_x, &speed_y);
 	
-		render(framebuffer);
+		render(&viewport);
 		SLEEP(1.0/FRAMERATE);
 	}
 
