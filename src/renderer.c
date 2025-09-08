@@ -35,17 +35,24 @@ void render(Viewport* viewport)
 	printf("+");
 	printf("\n");
 	
-	for (int y=0; y < viewport->height; y++)
+	for (int y=0; y < viewport->height; y+=2)
 	{
 		printf("|");
 		for (int x=0; x < viewport->width; x++)
 		{
-			//printf("%d", framebuffer[x][y]);
-			if (viewport->framebuffer[y * viewport->width + x] == 1) {
-				printf("█");
-			} else {
-				printf(" ");
+			int top = viewport->framebuffer[y * viewport->width + x];
+			int bottom = 0;
+
+			if (y+1 < viewport->height)
+			{
+				bottom = viewport->framebuffer[(y+1)  * viewport->width + x];
 			}
+
+			// display
+			if (top && bottom) printf("█");
+			else if (top) printf("▀");
+			else if (!top && bottom) printf("▄");
+			else printf(" ");
 		}
 		printf("|");
 		printf("\n");

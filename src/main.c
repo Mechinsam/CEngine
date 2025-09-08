@@ -16,7 +16,7 @@
 
 
 #define WIDTH 80
-#define HEIGHT 30
+#define HEIGHT 40
 #define FRAMERATE 24.0
 
 
@@ -70,7 +70,8 @@ int main()
 	srand(time(NULL));
 	Viewport viewport = create_viewport(WIDTH, HEIGHT, "Bouncing demo - CEngine");
 
-	int pos_x = 0, pos_y = 0;
+	int pos_x = rand() % (WIDTH-1);
+	int pos_y = rand() % (WIDTH-1);
 	int speed_x = 1, speed_y = 1;
 
 	int running = 1;
