@@ -17,7 +17,7 @@
 
 #define WIDTH 80
 #define HEIGHT 40
-#define FRAMERATE 24.0
+#define FRAMERATE 60.0
 
 
 void old_update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
@@ -44,15 +44,21 @@ void old_update(int framebuffer[WIDTH][HEIGHT], int *pos_x, int *pos_y)
 				break;
 		}
 	}
-	framebuffer[*pos_x][*pos_y] = 1;
+	framebuffer[*pos_x][*pos_y] = RED;
 }
 
-void update(Viewport* viewport, int *pos_x, int *pos_y, int *speed_x, int *speed_y)
+void update(Viewport* viewport, int *pos_x, int *pos_y, int *speed_x, int *speed_y, Color *current_color)
 {
 	*pos_x += *speed_x; *pos_y += *speed_y;
 
-	if (*pos_x < 0 || *pos_x > WIDTH - 1) *speed_x = -*speed_x;
-	if (*pos_y < 0 || *pos_y > HEIGHT -1) *speed_y = -*speed_y;
+	if (*pos_x < 0 || *pos_x > WIDTH - 1){
+		*speed_x = -*speed_x;
+		*current_color = 1+rand() % 7;
+	} 
+	if (*pos_y < 0 || *pos_y > HEIGHT -1) {
+		*speed_y = -*speed_y;
+		*current_color = 1+rand() % 7;
+	}
 
 	if (*pos_x < 0) *pos_x = 0;
 	if (*pos_x > WIDTH-1) *pos_x = WIDTH-1;
@@ -60,18 +66,20 @@ void update(Viewport* viewport, int *pos_x, int *pos_y, int *speed_x, int *speed
 	if (*pos_y > HEIGHT-1) *pos_y = HEIGHT-1;
 
 	
-	viewport->framebuffer[*pos_y * viewport->width + *pos_x] = 1;
+	viewport->framebuffer[*pos_y * viewport->width + *pos_x] = *current_color;
 }
+
 
 int main()
 {
 	//init_keyboard();
 	
 	srand(time(NULL));
-	Viewport viewport = create_viewport(WIDTH, HEIGHT, "Bouncing demo - CEngine");
+	Viewport viewport = create_viewport(WIDTH, HEIGHT, "Bouncing demo - CEngine", GREEN);
 
 	int pos_x = rand() % (WIDTH-1);
 	int pos_y = rand() % (WIDTH-1);
+	Color current_color = 1+rand() % 7;
 	int speed_x = 1, speed_y = 1;
 
 	int running = 1;
@@ -82,7 +90,7 @@ int main()
 		clear_framebuffer(&viewport);
 
 		// update
-		update(&viewport, &pos_x, &pos_y, &speed_x, &speed_y);
+		update(&viewport, &pos_x, &pos_y, &speed_x, &speed_y, &current_color);
 	
 		render(&viewport);
 		SLEEP(1.0/FRAMERATE);

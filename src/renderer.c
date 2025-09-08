@@ -2,29 +2,41 @@
 #include <stdlib.h>
 //#include <string.h>
 
+typedef enum {
+	BLACK,
+	RED,
+	GREEN,
+	YELLOW,
+	BLUE,
+	MAGENTA,
+	CYAN,
+	WHITE
+} Color;
+
 typedef struct {
 	int width;
 	int height;
 
 	char title[100];
 
-	int* framebuffer;
+	Color* framebuffer;
+	Color bg_color;
 } Viewport;
 
-Viewport create_viewport(int width, int height, char title[100])
+Viewport create_viewport(int width, int height, char title[100], Color bg_color)
 {
 	Viewport viewport;
 	viewport.width = width;
 	viewport.height =  height;
 	snprintf(viewport.title, sizeof(viewport.title), "%s", title);
-	viewport.framebuffer = malloc(width * height * sizeof(int));
+	viewport.framebuffer = malloc(width * height * sizeof(Color));
+	viewport.bg_color = bg_color;
 
 	return viewport;
 }
 
 void render(Viewport* viewport)
 {
-
 	printf("%s\n", viewport->title);
 	// border
 	printf("+");
@@ -40,8 +52,8 @@ void render(Viewport* viewport)
 		printf("|");
 		for (int x=0; x < viewport->width; x++)
 		{
-			int top = viewport->framebuffer[y * viewport->width + x];
-			int bottom = 0;
+			Color top = viewport->framebuffer[y * viewport->width + x];
+			Color bottom = BLACK;
 
 			if (y+1 < viewport->height)
 			{
@@ -49,10 +61,18 @@ void render(Viewport* viewport)
 			}
 
 			// display
-			if (top && bottom) printf("█");
-			else if (top) printf("▀");
-			else if (!top && bottom) printf("▄");
-			else printf(" ");
+			printf("\033[4%dm", viewport->bg_color);
+			if (top && bottom) {
+				printf("\033[3%d;4%dm▀", top, bottom);
+			}
+			else if (top)
+				printf("\033[3%dm▀", top);
+			else if (bottom)
+				printf("\033[3%dm▄", bottom);
+			else
+				printf(" ");
+			
+			printf("\033[0m");
 		}
 		printf("|");
 		printf("\n");
@@ -74,7 +94,7 @@ void clear_framebuffer(Viewport* viewport)
 	{
 		for (int x=0; x < viewport->width; x++)
 		{
-			viewport->framebuffer[y * viewport->width + x] = 0;
+			viewport->framebuffer[y * viewport->width + x] = BLACK;
 		}
 	}
 }
